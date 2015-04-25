@@ -1,0 +1,16 @@
+#!/bin/bash -eE
+HEAD=${1:-$(git current-branch)}
+REMOTE=$(git select-remote "$2")
+BRANCHES=($(git for-each-ref refs/heads --format="%(refname:short)"))
+TRACKED=()
+
+(set -x; git fetch --tags --prune "$REMOTE")
+for BRANCH in "${BRANCHES[@]}"; do
+  git remote-exists "$REMOTE" "$BRANCH" || continue # Exit early if branch is not remotely tracked
+  ( set -x; git checkout "$BRANCH" && git merge --ff-only "$REMOTE/$BRANCH" ) &&
+  { TRACKED+=($BRANCH) || :; }
+done
+git current-branch "$HEAD" || git checkout "$HEAD"
+set -x
+git push "$REMOTE" "${TRACKED[@]}"
+git purge "feature/" "$REMOTE"

@@ -1,0 +1,8 @@
+#!/bin/bash -eE
+STATUS=$(git status -s)
+BRANCH=$(git current-branch)
+DATE=$(date)
+MESSAGE="WIPE SAVEPOINT ${BRANCH} ${DATE}\n\n${STATUS}"
+
+(set -x; git add -A )
+echo -e "$MESSAGE" | bash -cx 'git commit -F- && git reset "HEAD~1" --hard'

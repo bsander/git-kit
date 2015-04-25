@@ -1,0 +1,8 @@
+#!/bin/bash -eE
+#
+# TODO: Should the remote be an exact match or can it be a substring?
+#
+
+TARGET_REMOTE=$(git remote | grep "^${1:-.*}$" | head -n 1)
+[[ -z "$TARGET_REMOTE" ]] && echo "No valid remote available" >&2 && exit 1
+echo "$TARGET_REMOTE"

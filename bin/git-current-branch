@@ -1,0 +1,18 @@
+#!/bin/bash -eE
+#
+# With no arguments, show branch name for HEAD.
+# With one argument, test if branch name matches given string.
+#
+# Usage:
+# git current-branch
+#   => outputs current branch name
+# git current-branch <branch>
+#   => exit code
+
+HEAD="$(git rev-parse --abbrev-ref HEAD)"
+if [[ -z "$1" ]]; then
+  echo "$HEAD"
+  exit 0
+fi
+
+[[ "$1" == "$HEAD" ]]

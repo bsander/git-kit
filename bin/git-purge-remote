@@ -1,0 +1,24 @@
+#!/bin/bash -eE
+REMOTE=$(git select-remote "$2")
+# Don't use :- on $1 to disable the prefix check when passing ""
+# Also, the grep is for an actual asterisk (*) character, not a wildcard or regex.
+# This signifies the current branch.
+REMOTE_BRANCHES=$(git branch --remotes --merged |
+  grep -v "^\*" |
+  grep "^\s*$REMOTE/${1-feature/}" |
+  sed "s/\s*$REMOTE\\///" || :)
+[[ $REMOTE_BRANCHES ]] || {
+  echo "No remote purgable branches found within $(git current-branch) branch";
+  exit 0;
+}
+
+[[ $REMOTE_BRANCHES ]] && { echo; echo "${REMOTE}:"; \
+  echo "$REMOTE_BRANCHES" | xargs -n 1 echo "- "; }
+# Wait for <enter> (or abort with ^C)
+echo; read -p "Delete remote branches?" -s; echo
+
+if [[ $REMOTE_BRANCHES ]]; then
+  # no quotes on last argument, we want it to be expanded here
+  # shellcheck disable=2086
+  (set -x; git push "$REMOTE" --delete $REMOTE_BRANCHES )
+fi

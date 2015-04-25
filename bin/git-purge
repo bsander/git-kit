@@ -1,0 +1,34 @@
+#!/bin/bash -Ee
+#
+# Removes all local branches that have been merged into the current branch along with their
+# remote tracking branches.
+#
+# Usage:
+# git purge [prefix=feature/ [remote]]
+
+REMOTE=$(git select-remote "$2" 2>/dev/null || :)
+# Don't use :- on $1 to disable the prefix check when passing ""
+# Also, the grep is for an actual asterisk (*) character, not a wildcard or regex.
+# This signifies the current branch.
+BRANCHES=$(git branch --merged | grep -v "^\\*" | grep "^\s*${1-feature/}" || :)
+[[ $BRANCHES ]] || { echo "No purgable branches found within $(git current-branch) branch"; exit 0; }
+set -x
+[[ -n "$REMOTE" ]] && REMOTE_BRANCHES=$(echo "$BRANCHES" | xargs -n 1 -I % bash -c \
+  "git remote-exists $REMOTE % && echo % || :")
+
+[[ $REMOTE_BRANCHES ]] && {
+  echo
+  echo "${REMOTE}:"
+  echo "$REMOTE_BRANCHES" | xargs -n 1 echo "- "
+}
+echo; echo "local:"; echo "$BRANCHES" | xargs -n 1 echo "- "
+# Wait for <enter> (or abort with ^C)
+echo; read -p "Delete ${REMOTE_BRANCHES:+remote and }local branches?" -s; echo
+
+if [[ $REMOTE_BRANCHES ]]; then
+  # no quotes on last argument, we want it to be expanded here
+  # shellcheck disable=2086
+  (set -x; git push "$REMOTE" --delete $REMOTE_BRANCHES )
+fi
+# shellcheck disable=2086
+(set -x; git branch --delete $BRANCHES ) # same

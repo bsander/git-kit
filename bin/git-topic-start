@@ -1,0 +1,8 @@
+#!/bin/bash -eE
+TOPIC=${1:?No topic specified}
+NAME=${2:?No name specified for topic branch}
+HEAD=${3:-$(git current-branch)}
+
+set -x
+git current-branch "$HEAD" || git checkout "$HEAD"
+git checkout -b "${TOPIC}/${NAME}"

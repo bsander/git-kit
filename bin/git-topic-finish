@@ -1,0 +1,8 @@
+#!/bin/bash -eE
+REMOTE=$(git select-remote "$2")
+TARGET=$(git select-remote-branch "$1" "$2")
+
+set -x
+git push --set-upstream "$REMOTE" "$(git current-branch)"
+git pull-request "$TARGET"
+git checkout "$TARGET"
