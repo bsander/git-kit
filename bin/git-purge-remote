@@ -1,4 +1,14 @@
 #!/bin/bash -eE
+# Fully resolve base directory: http://stackoverflow.com/a/246128
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+BASE_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+. "$BASE_DIR/functions.sh"
+
 REMOTE=$(git select-remote "$2")
 # Don't use :- on $1 to disable the prefix check when passing ""
 # Also, the grep is for an actual asterisk (*) character, not a wildcard or regex.
@@ -8,14 +18,16 @@ REMOTE_BRANCHES=$(git branch --remotes --merged |
   grep "^\s*$REMOTE/${1-feature/}" |
   sed "s/\s*$REMOTE\\///" || :)
 [[ $REMOTE_BRANCHES ]] || {
-  echo "No remote purgable branches found within $(git current-branch) branch";
-  exit 0;
+  echo "No remote purgable branches found within $(git current-branch) branch"
+  exit 0
 }
 
-[[ $REMOTE_BRANCHES ]] && { echo; echo "${REMOTE}:"; \
-  echo "$REMOTE_BRANCHES" | xargs -n 1 echo "- "; }
-# Wait for <enter> (or abort with ^C)
-echo; read -p "Delete remote branches?" -s; echo
+[[ $REMOTE_BRANCHES ]] && {
+  echo; echo "${REMOTE}:"
+  echo "$REMOTE_BRANCHES" | xargs -n 1 echo "-"
+}
+yn "Delete remote branches?"
+echo
 
 if [[ $REMOTE_BRANCHES ]]; then
   # no quotes on last argument, we want it to be expanded here
