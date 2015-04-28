@@ -12,5 +12,5 @@ for BRANCH in "${BRANCHES[@]}"; do
 done
 git current-branch "$HEAD" || git checkout "$HEAD"
 set -x
-git push "$REMOTE" "${TRACKED[@]}"
+git push --tags "$REMOTE" "${TRACKED[@]}"
 git purge "feature/" "$REMOTE"
