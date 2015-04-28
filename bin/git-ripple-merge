@@ -1,0 +1,20 @@
+#!/bin/bash -eE
+#
+# Performs a depth-first recursive merge of the current branch into all branches listed under
+# `git config --get-all branch.<branch>.ripple`
+#
+ripple-step () {
+  local HEAD
+  HEAD=$(git current-branch)
+  while read -r TARGET; do
+    echo "=== Ripple-merge:" "$HEAD" "->" "$TARGET";
+      ( set -x;
+        git checkout "$TARGET" &&
+        git merge --log "$HEAD"
+      ) &&
+      ripple-step &&
+      git checkout "$HEAD"
+  done < <(git config --get-all "branch.${HEAD}.ripple")
+}
+
+ripple-step
