@@ -1,0 +1,22 @@
+#!/bin/bash -eE
+# Delete current branch local and remote, even when it's not merged into remote HEAD
+
+# Fully resolve base directory: http://stackoverflow.com/a/246128
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+BASE_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+. "$BASE_DIR/functions.sh"
+
+TARGET=$(git current-branch)
+REMOTE=$(git select-remote "$2")
+HEAD=$(git select-remote-branch "$1")
+[[ $HEAD == "$TARGET" ]] && echo "HEAD and target branch cannot be the same" >&2 && exit 1
+ny "Are you sure you want to delete branch $TARGET${REMOTE:+, local and from remote $REMOTE}?"
+set -x
+git checkout "$HEAD"
+git branch -D "$TARGET"
+[[ -n "$REMOTE" ]] && git push "$REMOTE" --delete "$TARGET"
