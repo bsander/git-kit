@@ -1,0 +1,11 @@
+#!/bin/bash -eE
+#
+# Delete a branch and replace it with a "retired" tag in order to preserve its history
+
+REMOTE=$(git select-remote-branch "$1" || :)
+HEAD=$(git current-branch)
+TAG="retired/$HEAD"
+git tag "$TAG" --message="Retired branch ${HEAD}"
+git checkout "$TAG"
+# Purge exact-matching branch
+git purge "$HEAD$" "$REMOTE"
