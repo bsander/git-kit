@@ -4,7 +4,7 @@
 # remote tracking branches.
 #
 # Usage:
-# git purge [prefix=feature/ [remote]]
+# git purge [prefix=(feature|release|hotfix)/ [remote]]
 
 # Fully resolve base directory: http://stackoverflow.com/a/246128
 SOURCE="${BASH_SOURCE[0]}"
@@ -20,7 +20,7 @@ REMOTE=$(git select-remote "$2" 2>/dev/null || :)
 # Don't use :- on $1 to disable the prefix check when passing ""
 # Also, the grep is for an actual asterisk (*) character, not a wildcard or regex.
 # This signifies the current branch.
-BRANCHES=$(git branch --merged | grep -v "^\\*" | grep "^\s*${1-feature/}" || :)
+BRANCHES=$(git branch --merged | grep -v "^\\*" | grep "^\s*${1-\(feature\|release\|hotfix\)/}" || :)
 [[ $BRANCHES ]] || {
   echo "No purgable branches found within $(git current-branch) branch"
   exit 0
