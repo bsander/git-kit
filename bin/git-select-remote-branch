@@ -1,5 +1,17 @@
 #!/bin/bash -eE
-[[ -n "$1" ]] && echo "$1" && exit 0
 
-REMOTE=$(git select-remote "$2")
-git symbolic-ref --short "refs/remotes/${REMOTE}/${1:-HEAD}" 2>/dev/null | sed "s/^$REMOTE\\///"
+# If argument is given, use it.
+BRANCH="$1"
+
+# Otherwise, select default branch from config
+[[ -z "$BRANCH" ]] && BRANCH=$(git config kit.default-branch || :)
+
+# If a remote is available, select remote HEAD
+REMOTE=$(git select-remote "$2" 2>/dev/null || :)
+if [[ -n "$REMOTE" && ${BRANCH:=HEAD} == "HEAD" ]]; then
+  BRANCH=$(git symbolic-ref --short "refs/remotes/$REMOTE/$BRANCH" 2>/dev/null | sed "s/^$REMOTE\\///")
+fi
+
+# Fallback to master and verify selected branch exists locally
+git show-ref "refs/heads/${BRANCH:=master}" --verify --quiet && echo "$BRANCH" && exit 0
+echo "No suitable branch found${REMOTE:+ based on $REMOTE/$BRANCH}" >&2 && exit 1
