@@ -1,0 +1,17 @@
+#!/bin/bash -eE
+#
+# Initiate a pull request from the current branch to the one specified and open the page in your
+# browser
+#
+# Requires presence of the Hub utility: https://hub.github.com/
+#
+# @TODO: Is this really necessary?
+#
+# Usage:
+# git pull-request [target-repo]
+#   - target-repo should be Github-style: [user/]repo (e.g. "gitkit" or "bsander/gitkit")
+
+TARGET_REPO=${2:+-h "$2:$(git current-branch)"}
+set -x
+# shellcheck disable=2086
+hub pull-request -o -b "$(git select-branch "$1")" $TARGET_REPO
