@@ -1,6 +1,6 @@
 #!/bin/bash -eE
 REMOTE=$(git select-remote "$2")
-TARGET=$(git select-remote-branch "$1" "$2")
+TARGET=$(git select-branch "$1" "$2")
 HEAD=$(git current-branch)
 [[ $HEAD == "$TARGET" ]] && echo "Branch can't be merged into $HEAD" && exit 1
 
