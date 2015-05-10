@@ -1,6 +1,6 @@
 # git kit
 
-This is my git kit, a collection of shell scripts that have formed over time to help me with various repetitive git tasks on my or my employer's git repositories.
+This is my git kit, a collection of shell scripts that have formed over time to help me with various repetitive git tasks on several of my git repositories.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->

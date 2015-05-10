@@ -4,7 +4,7 @@ chain-merge () {
   local HEAD
   HEAD=$(git current-branch)
   while read -r TARGET; do
-    echo "=== Ripple-merge:" "$HEAD" "->" "$TARGET";
+    echo "=== Chain-merge:" "$HEAD" "->" "$TARGET";
       ( set -x;
         git checkout "$TARGET" &&
         git merge --log "$HEAD"
