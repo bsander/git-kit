@@ -1,6 +1,6 @@
 #!/bin/bash -eE
 
-ripple-step () {
+chain-merge () {
   local HEAD
   HEAD=$(git current-branch)
   while read -r TARGET; do
@@ -9,9 +9,9 @@ ripple-step () {
         git checkout "$TARGET" &&
         git merge --log "$HEAD"
       ) &&
-      ripple-step &&
+      chain-merge &&
       git checkout "$HEAD"
-  done < <(git config --get-all "branch.${HEAD}.ripple")
+  done < <(git config --get-all "branch.${HEAD}.mergechain")
 }
 
-ripple-step
+chain-merge
