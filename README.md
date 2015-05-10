@@ -26,7 +26,7 @@ This is my git kit, a collection of shell scripts that have formed over time to 
     - [`remote-exists [remote [branch]]`](#remote-exists-remote-branch)
     - [`select-branch [branch [remote]]`](#select-branch-branch-remote)
     - [`select-remote [remote]`](#select-remote-remote)
-  - [Acknowledgements](#acknowledgements)
+- [Acknowledgements](#acknowledgements)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -186,7 +186,7 @@ You can configure a default remote for your repository with a git config command
 git config kit.default-remote upstream
 ```
 
-### Acknowledgements
+## Acknowledgements
 
 Some articles that helped me with ideas and implementations of some of these commands:
 
