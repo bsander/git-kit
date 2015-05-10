@@ -14,4 +14,4 @@ fi
 
 # Fallback to master and verify selected branch exists locally
 git show-ref "refs/heads/${BRANCH:=master}" --verify --quiet && echo "$BRANCH" && exit 0
-echo "No suitable branch found${REMOTE:+ based on $REMOTE/$BRANCH}" >&2 && exit 1
+echo "No branch found${REMOTE:+ based on $REMOTE/$BRANCH}" >&2 && exit 1

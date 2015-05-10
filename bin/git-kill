@@ -10,11 +10,14 @@ done
 BASE_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 . "$BASE_DIR/functions.sh"
 
+
 TARGET=$(git current-branch)
-REMOTE=$(git select-remote "$2")
+REMOTE=$(git select-remote "$2" || :)
 HEAD=$(git select-branch "$1")
+
 [[ $HEAD == "$TARGET" ]] && echo "HEAD and target branch cannot be the same" >&2 && exit 1
 ny "Are you sure you want to delete branch $TARGET${REMOTE:+, local and from remote $REMOTE}?"
+
 set -x
 git checkout "$HEAD"
 git branch -D "$TARGET"

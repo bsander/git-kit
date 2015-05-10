@@ -1,6 +1,6 @@
 #!/bin/bash -eE
 
-REMOTE=$(git select-branch "$1" || :)
+REMOTE=$(git select-remote "$1" || :)
 HEAD=$(git current-branch)
 TAG="retired/$HEAD"
 git tag "$TAG" --message="Retired branch ${HEAD}"

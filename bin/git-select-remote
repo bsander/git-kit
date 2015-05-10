@@ -7,5 +7,5 @@ TARGET="$1"
 
 # Fallback to origin and verify selected remote exists
 REMOTE=$(git remote | grep "^${TARGET:=origin}$" | head -n 1)
-[[ -z "$REMOTE" ]] && echo "No valid remote available" >&2 && exit 1
+[[ -z "$REMOTE" ]] && echo "No remote found" >&2 && exit 1
 echo "$REMOTE"
