@@ -1,8 +1,5 @@
 #!/bin/bash -eE
-#
-# Performs a depth-first recursive merge of the current branch into all branches listed under
-# `git config --get-all branch.<branch>.ripple`
-#
+
 ripple-step () {
   local HEAD
   HEAD=$(git current-branch)

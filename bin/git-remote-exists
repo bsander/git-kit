@@ -1,4 +1,5 @@
 #!/bin/bash -eE
+
 REMOTE=$(git select-remote "$1")
 BRANCH=$(git select-branch "$2" "$1")
 git show-ref "refs/remotes/${REMOTE}/${BRANCH}" --verify --quiet

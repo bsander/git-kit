@@ -1,4 +1,5 @@
 #!/bin/bash -eE
+
 HEAD=${1:-$(git current-branch)}
 REMOTE=$(git select-remote "$2")
 BRANCHES=($(git for-each-ref refs/heads --format="%(refname:short)"))
@@ -13,4 +14,5 @@ done
 git current-branch "$HEAD" || git checkout "$HEAD"
 set -x
 git push --tags "$REMOTE" "${TRACKED[@]}"
+
 git purge "feature/" "$REMOTE"

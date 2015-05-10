@@ -1,5 +1,4 @@
 #!/bin/bash -eE
-# Delete current branch local and remote, even when it's not merged into remote HEAD
 
 # Fully resolve base directory: http://stackoverflow.com/a/246128
 SOURCE="${BASH_SOURCE[0]}"

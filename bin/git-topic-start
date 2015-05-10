@@ -1,4 +1,5 @@
 #!/bin/bash -eE
+
 TOPIC=${1:?No topic specified}
 NAME=${2:?No name specified for topic branch}
 HEAD=${3:-$(git current-branch)}

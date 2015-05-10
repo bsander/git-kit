@@ -1,19 +1,6 @@
 #!/bin/bash -eE
-#
-# With no arguments, show branch name for HEAD.
-# With one argument, test if branch name matches given string.
-#
-# Usage:
-# git current-branch
-#   => outputs current branch name
-# git current-branch <branch>
-#   => exit code
 
 HEAD="$(git rev-parse --abbrev-ref HEAD)"
 [[ $HEAD == "HEAD" ]] && echo "Current HEAD is not on a branch" >&2 && exit 1
-if [[ -z "$1" ]]; then
-  echo "$HEAD"
-  exit 0
-fi
-
+[[ -z "$1" ]] && echo "$HEAD" && exit 0
 [[ "$1" == "$HEAD" ]]

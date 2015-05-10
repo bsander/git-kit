@@ -1,10 +1,4 @@
 #!/bin/bash -Ee
-#
-# Removes all local branches that have been merged into the current branch along with their
-# remote tracking branches.
-#
-# Usage:
-# git purge [prefix=(feature|release|hotfix)/ [remote]]
 
 # Fully resolve base directory: http://stackoverflow.com/a/246128
 SOURCE="${BASH_SOURCE[0]}"
@@ -15,6 +9,7 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 BASE_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 . "$BASE_DIR/functions.sh"
+
 
 REMOTE=$(git select-remote "$2" 2>/dev/null || :)
 # Don't use :- on $1 to disable the prefix check when passing ""
@@ -34,7 +29,6 @@ BRANCHES=$(git branch --merged | grep -v "^\\*" | grep "^\s*${1-\(feature\|relea
   echo "$REMOTE_BRANCHES" | xargs -n 1 echo "-"
 }
 echo; echo "local:"; echo "$BRANCHES" | xargs -n 1 echo "-"
-# Wait for <enter> (or abort with ^C)
 yn "Delete ${REMOTE_BRANCHES:+remote and }local branches?"
 echo
 

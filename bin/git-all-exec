@@ -1,8 +1,4 @@
 #!/bin/bash -eE
-#
-# Execute any command on this and all subrepos
-#
-# Usage: git all-exec <command>
 
 echo
 echo "==== Submodules"

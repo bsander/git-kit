@@ -1,4 +1,5 @@
 #!/bin/bash -eE
+
 STATUS=$(git status -s)
 BRANCH=$(git current-branch)
 DATE=$(date)

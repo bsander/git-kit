@@ -1,6 +1,4 @@
 #!/bin/bash -eE
-#
-# Delete a branch and replace it with a "retired" tag in order to preserve its history
 
 REMOTE=$(git select-branch "$1" || :)
 HEAD=$(git current-branch)
