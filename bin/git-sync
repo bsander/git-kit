@@ -11,8 +11,8 @@ for BRANCH in "${BRANCHES[@]}"; do
   ( set -x; git checkout "$BRANCH" && git merge --ff-only "$REMOTE/$BRANCH" ) &&
   { TRACKED+=($BRANCH) || :; }
 done
-git current-branch "$HEAD" || git checkout "$HEAD"
 set -x
+git current-branch "$HEAD" || git checkout "$HEAD"
 git push --tags "$REMOTE" "${TRACKED[@]}"
 
-git purge "feature/" "$REMOTE"
+git purge "\(feature\|release\|hotfix\)/" "$REMOTE"

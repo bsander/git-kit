@@ -3,6 +3,8 @@
 REMOTE=$(git select-remote "$1" || :)
 HEAD=$(git current-branch)
 TAG="retired/$HEAD"
+
+set -x
 git tag "$TAG" --message="Retired branch ${HEAD}"
 git checkout "$TAG"
 # Purge exact-matching branch
