@@ -11,13 +11,15 @@ BASE_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 . "$BASE_DIR/functions.sh"
 
 REMOTE=$(git select-remote "$2")
+HEAD=$(git select-branch "" "$2")
 # Don't use :- on $1 to disable the prefix check when passing ""
 # Also, the grep is for an actual asterisk (*) character, not a wildcard or regex.
 # This signifies the current branch.
 REMOTE_BRANCHES=$(git branch --remotes --merged |
-  grep -v "^\*" |
-  grep "^\s*$REMOTE/${1-feature/}" |
-  sed "s/\s*$REMOTE\\///" || :)
+  grep -v "^\\s*${REMOTE}/HEAD ->" | # ignore HEAD reference
+  grep -v "^\\s*${REMOTE}/${HEAD}" | # ignore actual HEAD branch
+  grep "^\s*$REMOTE/${1-\(feature\|release\|hotfix\)/}" | # keep topic branches
+  sed "s/\s*$REMOTE\\///" || :) # drop remote prefix
 [[ $REMOTE_BRANCHES ]] || {
   echo "No remote purgable branches found within $(git current-branch) branch"
   exit 0
