@@ -1,18 +1,43 @@
 #!/bin/bash -eE
 
+# Fully resolve base directory: http://stackoverflow.com/a/246128
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+BASE_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+. "$BASE_DIR/functions.sh"
+
 HEAD=${1:-$(git current-branch)}
 REMOTE=$(git select-remote "$2")
 BRANCHES=($(git for-each-ref refs/heads --format="%(refname:short)"))
-TRACKED=()
+MERGE=()
+PUSH=()
 
 (set -x; git fetch --tags --prune "$REMOTE")
 for BRANCH in "${BRANCHES[@]}"; do
   git remote-exists "$REMOTE" "$BRANCH" || continue # Exit early if branch is not remotely tracked
-  ( set -x; git checkout "$BRANCH" && git merge --ff-only "$REMOTE/$BRANCH" ) &&
-  { TRACKED+=($BRANCH) || :; }
+  read -r left right <<< "$(git rev-list --count --left-right "$BRANCH...$REMOTE/$BRANCH")"
+  (( left > 0 )) && PUSH+=($BRANCH)
+  (( right > 0 )) && MERGE+=($BRANCH)
 done
-set -x
-git current-branch "$HEAD" || git checkout "$HEAD"
-git push --tags "$REMOTE" "${TRACKED[@]}"
 
+# Merge branches with remote updates
+for BRANCH in "${MERGE[@]}"; do
+  (set -x; git checkout -q "$BRANCH" && git merge --ff-only "$REMOTE/$BRANCH")
+done
+git current-branch "$HEAD" || (set -x; git checkout -q "$HEAD")
+
+# Push branches with local updates
+[[ -n "${PUSH[@]}" ]] && {
+  echo
+  echo "Locally updated branches:"
+  echo "${PUSH[@]}" | xargs -n 1 echo "-"
+  echo
+  yn "Push all changes to $REMOTE?" && (set -x; git push --tags "$REMOTE" "${PUSH[@]}")
+}
+
+# Cleanup
 git purge "\(feature\|release\|hotfix\)/" "$REMOTE"
