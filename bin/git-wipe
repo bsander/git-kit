@@ -1,7 +1,7 @@
 #!/bin/bash -eE
 
 STATUS=$(git status -s)
-BRANCH=$(git current-branch)
+BRANCH=$(git current-branch || git name-rev --name-only "$(git rev-parse HEAD)")
 DATE=$(date)
 MESSAGE="WIPE SAVEPOINT ${BRANCH} ${DATE}\n\n${STATUS}"
 
