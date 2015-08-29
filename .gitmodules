@@ -1,0 +1,3 @@
+[submodule "shflags"]
+	path = shflags
+	url = git@github.com:kward/shflags.git
