@@ -15,7 +15,6 @@
     "git-all-exec": "bin/git-all-exec",
     "git-current-branch": "bin/git-current-branch",
     "git-kill": "bin/git-kill",
-    "git-merge-chain": "bin/git-merge-chain",
     "git-purge": "bin/git-purge",
     "git-pull-request": "bin/git-pull-request",
     "git-purge-remote": "bin/git-purge-remote",

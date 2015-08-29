@@ -12,7 +12,6 @@ This is my git kit, a collection of shell scripts that have formed over time to 
 - [Commands](#commands)
     - [`all-exec <command*>`](#all-exec-command)
     - [`kill`](#kill)
-    - [`merge-chain`](#merge-chain)
     - [`pull-request [branch [target-repo]]`](#pull-request-branch-target-repo)
     - [`purge [prefix [remote]]`](#purge-prefix-remote)
     - [`purge-remote [prefix [remote]]`](#purge-remote-prefix-remote)
@@ -81,22 +80,6 @@ git config --global alias.all "all-exec git"
 #### `kill`
 
 Delete current branch local and remote, even when it's not merged into remote HEAD.
-
-#### `merge-chain`
-
-Performs a depth-first recursive merge of the current branch into all branches listed under `git config --get-all branch.<branch>.mergechain`
-
-This is basically a local version of [Atlassian's ripple-merge](http://blogs.atlassian.com/2013/05/git-automatic-merges-with-server-side-hooks-for-the-win/) strategy.
-
-Target branches for chain-merging can be set with the following commands:
-
-```bash
-# Add a target branch to chain-merge to
-git config --add branch.<branch>.mergechain <target>
-
-# Replace all chain-merge targets for this branch
-git config --replace branch.<branch>.mergechain
-```
 
 #### `pull-request [branch [target-repo]]`
 
