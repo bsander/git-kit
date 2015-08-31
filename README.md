@@ -2,32 +2,30 @@
 
 This is my git kit, a collection of shell scripts that have formed over time to help me with various repetitive git tasks on several of my git repositories.
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Contents**
+<!-- TOC depth:6 withLinks:1 updateOnSave:1 orderedList:0 -->
 
-- [Installation](#installation)
-  - [Environment](#environment)
-  - [Testing](#testing)
-- [Commands](#commands)
-    - [`all-exec <command*>`](#all-exec-command)
-    - [`kill`](#kill)
-    - [`pull-request [branch [target-repo]]`](#pull-request-branch-target-repo)
-    - [`purge [prefix [remote]]`](#purge-prefix-remote)
-    - [`purge-remote [prefix [remote]]`](#purge-remote-prefix-remote)
-    - [`retire [remote]`](#retire-remote)
-    - [`sync [branch [remote]]`](#sync-branch-remote)
-    - [`topic-start <topic> <name> [branch]`](#topic-start-topic-name-branch)
-    - [`topic-finish [branch [remote]]`](#topic-finish-branch-remote)
-    - [`wipe`](#wipe)
-  - [Plumbing commands](#plumbing-commands)
-    - [`current-branch [branch]`](#current-branch-branch)
-    - [`remote-exists [remote [branch]]`](#remote-exists-remote-branch)
-    - [`select-branch [branch [remote]]`](#select-branch-branch-remote)
-    - [`select-remote [remote]`](#select-remote-remote)
-- [Acknowledgements](#acknowledgements)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+- [git kit](#git-kit)
+	- [Installation](#installation)
+		- [Environment](#environment)
+		- [Testing](#testing)
+	- [Commands](#commands)
+			- [`all-exec <command*>`](#all-exec-command)
+			- [`kill`](#kill)
+			- [`pull-request [-b branch] [-R source-repo]`](#pull-request-b-branch-r-source-repo)
+			- [`purge [-r remote] [prefix]`](#purge-r-remote-prefix)
+			- [`purge-remote [prefix [remote]]`](#purge-remote-prefix-remote)
+			- [`retire [remote]`](#retire-remote)
+			- [`sync [branch [remote]]`](#sync-branch-remote)
+			- [`topic-start <topic> <name> [branch]`](#topic-start-topic-name-branch)
+			- [`topic-finish [branch [remote]]`](#topic-finish-branch-remote)
+			- [`wipe`](#wipe)
+		- [Plumbing commands](#plumbing-commands)
+			- [`current-branch [branch]`](#current-branch-branch)
+			- [`remote-exists [remote [branch]]`](#remote-exists-remote-branch)
+			- [`select-branch [branch [remote]]`](#select-branch-branch-remote)
+			- [`select-remote [remote]`](#select-remote-remote)
+	- [Acknowledgements](#acknowledgements)
+<!-- /TOC -->
 
 ## Installation
 
@@ -60,15 +58,15 @@ No unit tests are yet in place but linting is performed by [shellcheck](http://w
 
 ## Commands
 
-For many of these commands, `branch` and `remote` are optional arguments. If they are not supplied, the `select-remote` and `select-branch` commands are used to determine suitable defaults.
+For many of these commands, `-b, --branch` and `-r, --remote` are optional arguments. If they are not supplied, the `select-remote` and `select-branch` plumbing commands are used to determine suitable defaults.
 
-These scripts are mostly simple wrappers around existing git commands, and not a lot of validation is going on so handle them with as much care as you would every other shell command. They are executed with the `-eE` switches for bash though, and will abort as soon as anything unexpected happens. Also, the porcelain commands use the `-x` switch where relevant to keep you informed about their actions.
+These scripts are mostly simple wrappers around existing git commands, and not a lot of validation is going on so handle them with as much care as you would every other shell command. They are executed with the `-Eeuo pipefail` switches for bash though, and will abort as soon as anything unexpected happens. Also, the porcelain commands use the `-x` switch where relevant to keep you informed about their actions.
 
 I use `<>` to indicate mandatory arguments and `[]` to indicate optional ones.
 
 #### `all-exec <command*>`
 
-Simple wrapper around `git for-each`. Executes a command on all submodules as well as the main repository. 
+Simple wrapper around `git for-each`. Executes a command on all submodules as well as the main repository.
 Useful in combination with `git sync` to fully update your repository or just with `git status` to get a full summary.
 
 A handy alias I use for this is `git all` for exclusive use with git commands:
@@ -81,29 +79,29 @@ git config --global alias.all "all-exec git"
 
 Delete current branch local and remote, even when it's not merged into remote HEAD.
 
-#### `pull-request [branch [target-repo]]`
+#### `pull-request [-b branch] [-R source-repo]`
 
 Initiate a pull request from the current branch to the one specified and open the resulting url in your browser.
 
 Requires presence of the Hub utility: https://hub.github.com/
 
-Target-repo is interpreted Github-style: `[user/]repo` (i.e. `git-kit` or `bsander/git-kit`)
+`source-repo` is interpreted Github-style: `[user/]repo` (i.e. `git-kit` or `bsander/git-kit`)
 
-#### `purge [prefix [remote]]`
+#### `purge [-b branch] [-r remote] [prefix]`
 
-Find and delete all branches with a given prefix that have been merged in the current HEAD. Also finds and deletes these branches from the given (or default) remote
+Find and delete all branches with a given prefix that have been merged in the current HEAD or specified branch. Also finds and deletes these branches from the given (or default) remote
 
 `prefix` will default to the regexp `(feature|release|hotfix)/` when not supplied. Using an empty string `""` as prefix will disable it and purge all branches that have been merged into the current HEAD.
 
-#### `purge-remote [prefix [remote]]`
+#### `purge-remote [-b branch] [-r remote] [prefix]`
 
 Same as `purge`, but uses a remote branch as reference. Useful when your co-workers fail to clean up after themselves.
 
-#### `retire [remote]`
+#### `retire [-r remote]`
 
 Delete a branch and replace it with a `retired/<branch-name>` tag in order to preserve history
 
-#### `sync [branch [remote]]`
+#### `sync [-b branch] [-r remote]`
 
 Performs a fetch, merge and fast-forward-only push for all remote branches that are locally tracked. Also performs a `purge` from the given branch afterwards. I highly recommend setting up auto rebasing to generate cleaner merges with the following command:
 
@@ -111,7 +109,7 @@ Performs a fetch, merge and fast-forward-only push for all remote branches that 
 git config --global branch.autosetuprebase always
 ```
 
-#### `topic-start <topic> <name> [branch]`
+#### `topic-start [-t topic] [-b branch] <name>`
 
 Creates a `<topic>/<name>` branch from the given branch (or current HEAD). I use different versions of this with aliases:
 

@@ -1,23 +1,27 @@
-#!/bin/bash -eE
+#!/bin/bash
 
-# Fully resolve base directory: http://stackoverflow.com/a/246128
-SOURCE="${BASH_SOURCE[0]}"
-while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
-  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-  SOURCE="$(readlink "$SOURCE")"
-  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
-done
-BASE_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+# Define command flags
+set_flags () {
+  DEFINE_string "branch" "$(git select-branch)" "branch to use as HEAD" "b"
+  DEFINE_string "remote" "$(git select-remote)" "remote to use" "r"
+}
+
+# Load shared functions and parse arguments
+BASE_DIR=$(d() { (cd -P "$(dirname "$1")" && pwd) }; while [ -h "${S=${BASH_SOURCE[0]}}" ]; do D=$(d "$S"); S=$(readlink "$S"); [[ $S != /* ]] && S="$D/$S"; done; d "$S")
 . "$BASE_DIR/functions.sh"
 
-HEAD=${1:-$(git current-branch)}
-REMOTE=$(git select-remote "$2")
+
+# shellcheck disable=SC2154
+HEAD=$(git select-branch "$FLAGS_branch")
+# shellcheck disable=SC2154
+REMOTE=$(git select-remote "$FLAGS_remote")
+
 BRANCHES=($(git for-each-ref refs/heads --format="%(refname:short)"))
 MERGE=()
 PUSH=()
 
 (set -x; git fetch --tags --prune "$REMOTE")
-for BRANCH in "${BRANCHES[@]}"; do
+for BRANCH in "${BRANCHES[@]:0}"; do
   git remote-exists "$REMOTE" "$BRANCH" || continue # Exit early if branch is not remotely tracked
   read -r left right <<< "$(git rev-list --count --left-right "$BRANCH...$REMOTE/$BRANCH")"
   (( left > 0 )) && PUSH+=($BRANCH)
@@ -25,13 +29,13 @@ for BRANCH in "${BRANCHES[@]}"; do
 done
 
 # Merge branches with remote updates
-for BRANCH in "${MERGE[@]}"; do
+for BRANCH in "${MERGE[@]:0}"; do
   (set -x; git checkout -q "$BRANCH" && git merge --ff-only "$REMOTE/$BRANCH")
 done
 git current-branch "$HEAD" || (set -x; git checkout -q "$HEAD")
 
 # Push branches with local updates
-[[ -n "${PUSH[@]}" ]] && {
+[[ -n "${PUSH[@]:0}" ]] && {
   echo
   echo "Locally updated branches:"
   echo "${PUSH[@]}" | xargs -n 1 echo "-"

@@ -1,27 +1,29 @@
-#!/bin/bash -eE
+#!/bin/bash
 
-# Fully resolve base directory: http://stackoverflow.com/a/246128
-SOURCE="${BASH_SOURCE[0]}"
-while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
-  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-  SOURCE="$(readlink "$SOURCE")"
-  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
-done
-BASE_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+# Define command flags
+set_flags () {
+  DEFINE_string "branch" "$(git select-branch)" "branch to use as HEAD" "b"
+  DEFINE_string "remote" "$(git select-remote)" "remote to use" "r"
+}
+
+# Load shared functions and parse arguments
+BASE_DIR=$(d() { (cd -P "$(dirname "$1")" && pwd) }; while [ -h "${S=${BASH_SOURCE[0]}}" ]; do D=$(d "$S"); S=$(readlink "$S"); [[ $S != /* ]] && S="$D/$S"; done; d "$S")
 . "$BASE_DIR/functions.sh"
 
-REMOTE=$(git select-remote "$2")
-HEAD=$(git select-branch "" "$2")
 # Don't use :- on $1 to disable the prefix check when passing ""
-# Also, the grep is for an actual asterisk (*) character, not a wildcard or regex.
-# This signifies the current branch.
-REMOTE_BRANCHES=$(git branch --remotes --merged |
+PATTERN="${1-\(feature\|release\|hotfix\)/}"
+# shellcheck disable=SC2154
+REMOTE=$(git select-remote "$FLAGS_remote")
+# shellcheck disable=SC2154
+HEAD=$(git select-branch "" "$FLAGS_remote")
+
+REMOTE_BRANCHES=$(git branch --remotes --merged "$HEAD" |
   grep -v "^\\s*${REMOTE}/HEAD ->" | # ignore HEAD reference
   grep -v "^\\s*${REMOTE}/${HEAD}" | # ignore actual HEAD branch
-  grep "^\s*$REMOTE/${1-\(feature\|release\|hotfix\)/}" | # keep topic branches
+  grep "^\s*$REMOTE/.*$PATTERN.*" | # keep topic branches
   sed "s/\s*$REMOTE\\///" || :) # drop remote prefix
 [[ $REMOTE_BRANCHES ]] || {
-  echo "No remote purgable branches found within $(git current-branch) branch"
+  echo "No remote purgable branches found for $HEAD"
   exit 0
 }
 

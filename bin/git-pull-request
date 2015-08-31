@@ -1,6 +1,18 @@
-#!/bin/bash -eE
+#!/bin/bash
 
-TARGET_REPO=${2:+-h "$2:$(git current-branch)"}
+# Define command flags
+set_flags () {
+  DEFINE_string "branch" "$(git select-branch)" "branch to use as HEAD" "b"
+  DEFINE_string "repo" "" "Github repository to use as source" "R"
+}
+
+# Load shared functions and parse arguments
+BASE_DIR=$(d() { (cd -P "$(dirname "$1")" && pwd) }; while [ -h "${S=${BASH_SOURCE[0]}}" ]; do D=$(d "$S"); S=$(readlink "$S"); [[ $S != /* ]] && S="$D/$S"; done; d "$S")
+. "$BASE_DIR/functions.sh"
+
+
+# shellcheck disable=SC2154
+SOURCE_REPO=${FLAGS_repo:+-h "$FLAGS_repo:$(git current-branch)"}
 set -x
-# shellcheck disable=2086
-hub pull-request -o -b "$(git select-branch "$1")" $TARGET_REPO
+# shellcheck disable=SC2154
+hub pull-request -o -b "$(git select-branch "$FLAGS_branch")" "$SOURCE_REPO"

@@ -1,6 +1,17 @@
-#!/bin/bash -eE
+#!/bin/bash
 
-REMOTE=$(git select-remote "$1" || :)
+# Define command flags
+set_flags () {
+  DEFINE_string "remote" "$(git select-remote)" "remote to use" "r"
+}
+
+# Load shared functions and parse arguments
+BASE_DIR=$(d() { (cd -P "$(dirname "$1")" && pwd) }; while [ -h "${S=${BASH_SOURCE[0]}}" ]; do D=$(d "$S"); S=$(readlink "$S"); [[ $S != /* ]] && S="$D/$S"; done; d "$S")
+. "$BASE_DIR/functions.sh"
+
+
+# shellcheck disable=SC2154
+REMOTE=$(git select-remote "$FLAGS_remote" || :)
 HEAD=$(git current-branch)
 TAG="retired/$HEAD"
 
