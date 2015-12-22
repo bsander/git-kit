@@ -12,7 +12,7 @@ eval set -- "${FLAGS_ARGV}"
 [ "$flags_error" = "help requested" ] && exit 0
 # Enable strict checking after shflags has finished
 # http://redsymbol.net/articles/unofficial-bash-strict-mode/
-set -Eeuo pipefail
+set -Eefuo pipefail
 
 ask () {
   read -p "$* " -r

@@ -1,9 +1,21 @@
-#!/bin/bash -eE
+#!/bin/bash
 
-TOPIC=${1:?No topic specified}
-NAME=${2:?No name specified for topic branch}
-HEAD=${3:-$(git current-branch)}
+# Define command flags
+set_flags () {
+  DEFINE_string "branch" "HEAD" "branch to split off from" "b"
+  DEFINE_string "topic" "" "Topic prefix" "t"
+}
+
+# Load shared functions and parse arguments
+BASE_DIR=$(d() { (cd -P "$(dirname "$1")" && pwd) }; while [ -h "${S=${BASH_SOURCE[0]}}" ]; do D=$(d "$S"); S=$(readlink "$S"); [[ $S != /* ]] && S="$D/$S"; done; d "$S")
+. "$BASE_DIR/functions.sh"
+
+
+TOPIC=${FLAGS_topic:?No topic specified}
+# shellcheck disable=SC2154
+HEAD=$(git rev-parse --abbrev-ref "$FLAGS_branch")
+NAME=${1:?No name specified for topic branch}
 
 set -x
-git current-branch "$HEAD" || git checkout "$HEAD"
-git checkout -b "${TOPIC}/${NAME}"
+git branch "${TOPIC}/${NAME}" "$HEAD"
+git checkout "${TOPIC}/${NAME}"
