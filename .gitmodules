@@ -1,3 +1,3 @@
-[submodule "shflags"]
-	path = shflags
-	url = git@github.com:kward/shflags.git
+[submodule "cmdarg"]
+	path = cmdarg
+	url = git@github.com:akesterson/cmdarg.git
