@@ -1,18 +1,31 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# Define command flags
+## TODO: Make template really optional
+
 set_flags () {
-  DEFINE_string "branch" "$(git select-branch)" "branch to use as HEAD" "b"
-  DEFINE_string "repo" "" "Github repository to use as source" "R"
+  cmdarg 'b?' 'branch' 'Branch to use as HEAD' "$(git select-branch)"
+  cmdarg 'g?' 'github-repo' 'Github repository to use as source' "$(git select-remote)"
+  cmdarg 't?' 'template' 'Template file to use as PR message' "/dev/null"
+  cmdarg 'e?' 'editor' 'Editor command to use for commit message' "$EDITOR"
 }
 
 # Load shared functions and parse arguments
 BASE_DIR=$(d() { (cd -P "$(dirname "$1")" && pwd) }; while [ -h "${S=${BASH_SOURCE[0]}}" ]; do D=$(d "$S"); S=$(readlink "$S"); [[ $S != /* ]] && S="$D/$S"; done; d "$S")
-. "$BASE_DIR/functions.sh"
-
+# shellcheck source=functions.sh disable=1091
+source "$BASE_DIR/functions.sh"
 
 # shellcheck disable=SC2154
-SOURCE_REPO=${FLAGS_repo:+-h "$FLAGS_repo:$(git current-branch)"}
+SOURCE_REPO=${cmdarg_cfg['github-repo']:+-h "${cmdarg_cfg['github-repo']}:$(git current-branch)"}
+PR_TEMPLATE=${cmdarg_cfg['template']}
+PR_EDIT=${cmdarg_cfg['editor']}
+
+# shellcheck disable=SC2154
+PR_MSG=$(gmktemp --suffix=".md" -t PR_MSG.XXXXXXXX )
+cat "$PR_TEMPLATE" > "$PR_MSG"
+
 set -x
-# shellcheck disable=SC2154
-hub pull-request -o -b "$(git select-branch "$FLAGS_branch")" "$SOURCE_REPO"
+$PR_EDIT "$PR_MSG"
+hub pull-request -o -F "$PR_MSG" -b "$(git select-branch "${cmdarg_cfg['branch']}")" "$SOURCE_REPO"
+
+# Keep the PR message around in $TMPDIR, the OS will remove it some time in the future.
+# rm -f "$PR_MSG"

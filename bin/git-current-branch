@@ -1,6 +1,20 @@
-#!/bin/bash -eE
+#!/usr/bin/env bash
+
+# Load shared functions and parse arguments
+BASE_DIR=$(d() { (cd -P "$(dirname "$1")" && pwd) }; while [ -h "${S=${BASH_SOURCE[0]}}" ]; do D=$(d "$S"); S=$(readlink "$S"); [[ $S != /* ]] && S="$D/$S"; done; d "$S")
+# shellcheck source=functions.sh disable=1091
+source "$BASE_DIR/functions.sh"
 
 HEAD="$(git rev-parse --abbrev-ref HEAD)"
-[[ $HEAD == "HEAD" ]] && echo "Current HEAD is not on a branch" >&2 && exit 1
-[[ -z "$1" ]] && echo "$HEAD" && exit 0
+
+if [[ $HEAD == "HEAD" ]]; then
+  echo "Current HEAD is not on a branch" >&2
+  exit 1
+fi
+
+if [[ -z "${1:-}" ]]; then
+  echo "$HEAD"
+  exit 0
+fi
+
 [[ "$1" == "$HEAD" ]]

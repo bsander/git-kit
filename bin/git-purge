@@ -1,38 +1,43 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Define command flags
 set_flags () {
-  DEFINE_string "branch" "$(git select-branch)" "branch to use as HEAD" "b"
-  DEFINE_string "remote" "$(git select-remote)" "remote to use" "r"
+  cmdarg 'b?' 'branch' 'Branch to use as reference' "$(git select-branch)"
+  cmdarg 'r?' 'remote' 'Remote to use' "$(git select-remote)"
+  cmdarg 'p?' 'pattern' 'Pattern used for detecting disposable branches' '\(feature\|release\|hotfix\)/'
 }
 
 # Load shared functions and parse arguments
 BASE_DIR=$(d() { (cd -P "$(dirname "$1")" && pwd) }; while [ -h "${S=${BASH_SOURCE[0]}}" ]; do D=$(d "$S"); S=$(readlink "$S"); [[ $S != /* ]] && S="$D/$S"; done; d "$S")
-. "$BASE_DIR/functions.sh"
+# shellcheck source=functions.sh disable=1091
+source "$BASE_DIR/functions.sh"
 
 
-# Don't use :- on $1 to disable the prefix check when passing ""
-PREFIX="${1-^\s*\(feature\|release\|hotfix\)/}"
 # shellcheck disable=SC2154
-REMOTE=$(git select-remote "$FLAGS_remote" 2>/dev/null || :)
-# shellcheck disable=SC2154
-BRANCH=$(git select-branch "$FLAGS_branch" 2>/dev/null || :)
+PATTERN=${cmdarg_cfg['pattern']}
+REMOTE=$(git select-remote "${cmdarg_cfg['remote']}" 2>/dev/null || true)
+BRANCH=$(git select-branch "${cmdarg_cfg['branch']}" 2>/dev/null || true)
 # The 2nd grep is for an actual asterisk (*) character, not a wildcard or regex. This signifies the current branch.
-BRANCHES=$(git branch --merged "$BRANCH" | grep -v "\\s*$BRANCH$" | grep -v "^\\*" | grep "$PREFIX" || :)
+BRANCHES=$(git branch --merged "$BRANCH" | grep -v "\\s*$BRANCH$" | grep -v "^\\*" | grep "$PATTERN" || true)
 
-[[ $BRANCHES ]] || {
+if [[ ! $BRANCHES ]]; then
   echo "No purgable branches found for $BRANCH"
   exit 0
-}
-[[ -n "$REMOTE" ]] && REMOTE_BRANCHES=$(echo "$BRANCHES" | xargs -n 1 -I % bash -c \
-  "git remote-exists $REMOTE % && echo % || :")
+fi
 
-[[ $REMOTE_BRANCHES ]] && {
+if [[ -n "$REMOTE" ]]; then
+  REMOTE_BRANCHES=$(echo "$BRANCHES" | xargs -n 1 -I % bash -c "git remote-exists $REMOTE % && echo % || true")
+fi
+
+if [[ $REMOTE_BRANCHES ]]; then
   echo
-  echo "${REMOTE}:"
+  echo "$REMOTE:"
   echo "$REMOTE_BRANCHES" | xargs -n 1 echo "-"
-}
-echo; echo "local:"; echo "$BRANCHES" | xargs -n 1 echo "-"
+fi
+
+echo
+echo "local:"
+echo "$BRANCHES" | xargs -n 1 echo "-"
 yn "Delete ${REMOTE_BRANCHES:+remote and }local branches?"
 echo
 

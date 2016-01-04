@@ -1,17 +1,31 @@
-#!/bin/bash -eE
+#!/usr/bin/env bash
+
+set_flags () {
+  cmdarg_info "header" "Outputs the named branch, the name of the HEAD branch of the given remote, or master. Will fail when none of these branches exist locally."
+  # cmdarg 'b?' 'branch' 'Branch to use as reference' "HEAD"
+  # cmdarg 'r?' 'remote' 'Remote to use' "$(git select-remote)"
+}
+
+# Load shared functions and parse arguments
+BASE_DIR=$(d() { (cd -P "$(dirname "$1")" && pwd) }; while [ -h "${S=${BASH_SOURCE[0]}}" ]; do D=$(d "$S"); S=$(readlink "$S"); [[ $S != /* ]] && S="$D/$S"; done; d "$S")
+# shellcheck source=functions.sh disable=1091
+source "$BASE_DIR/functions.sh"
 
 # If argument is given, use it.
-BRANCH="$1"
-
 # Otherwise, select default branch from config
-[[ -z "$BRANCH" ]] && BRANCH=$(git config kit.default-branch || :)
+# shellcheck disable=SC2154
+BRANCH="${cmdarg_argv[0]:-$(git config kit.default-branch || true)}"
 
 # If a remote is available, select remote HEAD
-REMOTE=$(git select-remote "$2" 2>/dev/null || :)
+REMOTE=$(git select-remote "${cmdarg_argv[1]:-}" 2>/dev/null || true)
 if [[ -n "$REMOTE" && ${BRANCH:=HEAD} == "HEAD" ]]; then
-  BRANCH=$(git symbolic-ref --short "refs/remotes/$REMOTE/$BRANCH" 2>/dev/null | sed "s/^$REMOTE\\///")
+  BRANCH=$(git symbolic-ref --short "refs/remotes/$REMOTE/$BRANCH" 2>/dev/null | sed "s/^$REMOTE\\///" || true)
 fi
 
 # Fallback to master and verify selected branch exists locally
-git show-ref "refs/heads/${BRANCH:=master}" --verify --quiet && echo "$BRANCH" && exit 0
-echo "No branch found${REMOTE:+ based on $REMOTE/$BRANCH}" >&2 && exit 1
+if ! git show-ref "refs/heads/${BRANCH:=master}" --verify --quiet; then
+  echo "No branch found${REMOTE:+ based on $REMOTE/$BRANCH}" >&2 && exit 1
+  exit 1
+fi
+
+echo "$BRANCH"

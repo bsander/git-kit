@@ -1,21 +1,21 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Define command flags
 set_flags () {
-  DEFINE_string "branch" "HEAD" "branch to split off from" "b"
-  DEFINE_string "topic" "" "Topic prefix" "t"
+  cmdarg 't:' 'topic' 'Topic prefix'
+  cmdarg 'b?' 'branch' 'Branch to split off from' 'HEAD'
 }
 
 # Load shared functions and parse arguments
 BASE_DIR=$(d() { (cd -P "$(dirname "$1")" && pwd) }; while [ -h "${S=${BASH_SOURCE[0]}}" ]; do D=$(d "$S"); S=$(readlink "$S"); [[ $S != /* ]] && S="$D/$S"; done; d "$S")
-. "$BASE_DIR/functions.sh"
+# shellcheck source=functions.sh disable=1091
+source "$BASE_DIR/functions.sh"
 
-
-TOPIC=${FLAGS_topic:?No topic specified}
 # shellcheck disable=SC2154
-HEAD=$(git rev-parse --abbrev-ref "$FLAGS_branch")
-NAME=${1:?No name specified for topic branch}
+TOPIC=${cmdarg_cfg['topic']:?NEVER HAPPENS - No topic specified}
+HEAD=$(git rev-parse --abbrev-ref "${cmdarg_cfg['branch']}")
+# shellcheck disable=SC2154
+NAME=${cmdarg_argv[0]:?No name specified for topic branch}
 
-set -x
 git branch "${TOPIC}/${NAME}" "$HEAD"
-git checkout "${TOPIC}/${NAME}"
+git checkout -q "${TOPIC}/${NAME}"

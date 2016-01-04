@@ -1,7 +1,12 @@
-#!/bin/bash -eE
+#!/usr/bin/env bash
+
+# Load shared functions and parse arguments
+BASE_DIR=$(d() { (cd -P "$(dirname "$1")" && pwd) }; while [ -h "${S=${BASH_SOURCE[0]}}" ]; do D=$(d "$S"); S=$(readlink "$S"); [[ $S != /* ]] && S="$D/$S"; done; d "$S")
+# shellcheck source=functions.sh disable=1091
+source "$BASE_DIR/functions.sh"
 
 echo
 echo "==== Submodules"
-(set -x; git submodule foreach "$* || :; echo ----")
+(set -x; git submodule foreach "$* || true; echo ----")
 echo "==== Main repository"
 eval "set -x;" "$@"
