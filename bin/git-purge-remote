@@ -19,7 +19,7 @@ BRANCH_PREFIX=$(git config --get kit.purgeableprefix || echo \(feature\|release\
 REMOTE_BRANCHES=$(git branch --remotes --merged |
   grep -v "^\\s*${REMOTE}/HEAD ->" | # ignore HEAD reference
   grep -v "^\\s*${REMOTE}/${HEAD}" | # ignore actual HEAD branch
-  grep "^\s*$REMOTE/${2-BRANCH_PREFIX}" | # keep topic branches
+  grep "^\s*$REMOTE/${2-$BRANCH_PREFIX}" | # keep topic branches
   sed "s/\s*$REMOTE\\///" || :) # drop remote prefix
 [[ $REMOTE_BRANCHES ]] || {
   echo "No remote purgable branches found within $(git current-branch) branch"
