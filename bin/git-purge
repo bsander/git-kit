@@ -12,10 +12,11 @@ BASE_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 
 REMOTE=$(git select-remote "$2" 2>/dev/null || :)
+BRANCH_PREFIX=$(git config --get gitkit.purgeableprefix || echo \(feature\|release\|hotfix\))
 # Don't use :- on $1 to disable the prefix check when passing ""
 # Also, the grep is for an actual asterisk (*) character, not a wildcard or regex.
 # This signifies the current branch.
-BRANCHES=$(git branch --merged | grep -v "^\\*" | grep "^\s*${1-\(feature\|release\|hotfix\)/}" || :)
+BRANCHES=$(git branch --merged | grep -v "^\\*" | grep "^\s*${1-BRANCH_PREFIX/}" || :)
 [[ $BRANCHES ]] || {
   echo "No purgable branches found within $(git current-branch) branch"
   exit 0
