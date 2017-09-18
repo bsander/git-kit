@@ -40,6 +40,4 @@ git current-branch "$HEAD" || (set -x; git checkout -q "$HEAD")
 }
 
 # Cleanup
-set -x
-BRANCH_PREFIX=$(git config --get gitkit.purgeableprefix || echo \(feature\|release\|hotfix\))
-git purge "$BRANCH_PREFIX/" "$REMOTE"
+git purge "$REMOTE"
