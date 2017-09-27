@@ -40,4 +40,4 @@ git current-branch "$HEAD" || (set -x; git checkout -q "$HEAD")
 }
 
 # Cleanup
-git purge "\(feature\|release\|hotfix\)/" "$REMOTE"
+git purge "$REMOTE"

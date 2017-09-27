@@ -106,13 +106,19 @@ Requires presence of the Hub utility: https://hub.github.com/
 
 Target-repo is interpreted Github-style: `[user/]repo` (i.e. `git-kit` or `bsander/git-kit`)
 
-#### `purge [prefix [remote]]`
+#### `purge [remote [prefix]]`
 
-Find and delete all branches with a given prefix that have been merged in the current HEAD. Also finds and deletes these branches from the given (or default) remote
+Find and delete all branches with a given prefix that have been merged in the current HEAD. Also finds and deletes these branches from the given (or default) remote.
 
-`prefix` will default to the regexp `(feature|release|hotfix)/` when not supplied. Using an empty string `""` as prefix will disable it and purge all branches that have been merged into the current HEAD.
+`prefix` will default to the regexp found in git config under key `kit.purgeableprefix`. When no config is supplied, `(feature|release|hotfix)/` will be used. Using an empty string `""` as prefix will disable it and purge all branches that have been merged into the current HEAD.
 
-#### `purge-remote [prefix [remote]]`
+In order to set the `kit.purgeableprefix` config use the following command:
+
+```bash
+git config --global kit.purgeableprefix "\(feature\|release\|hotfix\|bugfix\)"
+```
+
+#### `purge-remote [remote [prefix]]`
 
 Same as `purge`, but uses a remote branch as reference. Useful when your co-workers fail to clean up after themselves.
 
